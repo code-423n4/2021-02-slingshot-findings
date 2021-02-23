@@ -82,16 +82,12 @@ Manual review.
 ## Recommended Mitigation Steps
 Use a two-step process where the new admin address first claims ownership in one transaction and a second transaction from the new admin address takes ownership. A mistake in the first step can be recovered by claiming again from the correct admin address.
 
-
-
 # BUG 4
 ## Summary
 Incorrectly encoded arguments to `executeTrades()` can result in tokens being stolen by MEV.
 
 ## Risk Rating
-Impact = High  
-Likelihood = Medium  
-Risk = 3  
+3
 
 ## Vulnerability Details
 This finding combines a couple weaknesses into one attack. The first weakness is a lack of validation on arguments to `executeTrades`, the second is that a pre-existing `fromToken` balance can be used in a trade.  
@@ -102,7 +98,6 @@ This finding combines a couple weaknesses into one attack. The first weakness is
 4. With a correctly formatted array of `TradeData`, Eve will receive the proceeds of converting Alice's 1000 DAI to WETH.  
   
 ## Impact  
-  
 This issue is essentially identical to the one described in [**Ethereum is a Dark Forest**](https://medium.com/@danrobinson/ethereum-is-a-dark-forest-ecc5f0505dff), where locked tokens are available to anyone, and thus recovery is susceptible to front running.  
   
 It also provides an unauthorized alternative to `rescueTokens()`, however it is still a useful function to have, as it provides a method to recover the tokens without allowing a front runner to simulate and replay it.
