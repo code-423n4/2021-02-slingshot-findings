@@ -1,6 +1,7 @@
 **Handle:** paulius.eth  
 
-# 1. A wrong event is emitted.
+# BUG 1
+A wrong event is emitted.
 ## Summary
 function unregisterSwapModule emits ModuleRegistered when the ModuleUnregistered event is expected.
 ## Risk Rating
@@ -20,7 +21,8 @@ Just a simple code review using a text editor.
 ## Recommended Mitigation Steps
 emit `ModuleUnregistered` event in function unregisterSwapModule.
 
-# 2. Uniswap and Sushiswap modules approve the wrong amount when swapTokensForExactTokens is used
+# BUG 2 
+Uniswap and Sushiswap modules approve the wrong amount when `swapTokensForExactTokens` is used
 ## Summary
 Uniswap and Sushiswap modules use the function parameter named amount when approving the router. In the case of swapTokensForExactTokens it should check and approve amountInMax, not amount. 
 ## Risk Rating
@@ -45,7 +47,8 @@ Probably best would be to split swapExactTokensForTokens and swapTokensForExactT
 
 
 
-# 3. swapTokensForExactTokens does not reimburse leftovers
+# BUG 3
+`swapTokensForExactTokens` does not reimburse leftovers
 ## Summary
 Uniswap and Sushiswap modules do not reimburse the difference of amountInMax and the actual amount used to the sender when swapTokensForExactTokens is used.
 ## Risk Rating
@@ -67,7 +70,8 @@ Send back leftovers to the user by subtracting amounts[0]; from the input amount
 
 
 
-# 4. function swap does not have access restrictions
+# BUG 4 
+Function swap does not have access restrictions
 ## Summary
 Modules can be called directly by anyone as they do not check who is the sender.
 ## Risk Rating
@@ -88,7 +92,8 @@ Modules are supposed to be invoked only via the Slingshot contract (function exe
 
 
 
-# 5. function swap is payable for no reason
+# BUG 5 
+Function swap is payable for no reason
 ## Summary
 function swap in modules is payable although it does not use the msg.value and operates on WETH.
 ## Risk Rating
@@ -108,7 +113,8 @@ Remove the payable modifier from the swap functions in the modules.
 
 
 
-# 6. Useless fallback function in the Slingshot contract
+# BUG 6
+Useless fallback function in the Slingshot contract
 ## Summary
 Contract Slingshot has declared a fallback function which is not directly used:
 receive() external payable {}
@@ -129,9 +135,10 @@ Remove useless fallback function.
 
 
 
-# 7. executeTrades recipient can be 0x0
+# BUG 7
+`executeTrades` recipient can be 0x0
 ## Summary
-Function executeTrades does not check that the recipient is set.
+Function `executeTrades` does not check that the recipient is set.
 ## Risk Rating
 1
 ## Vulnerability Details
@@ -151,7 +158,8 @@ In case this was not intended, there are several possibilities to mitigate this 
 
 
 
-# 8. Modules do not check that it is the same token
+# BUG 8
+Modules do not check that it is the same token
 ## Summary
 Each module separately accepts and uses the addresses of input and output tokens. However, function executeTrades expects that fromToken and toToken are the same in every module.
 ## Risk Rating
@@ -172,9 +180,8 @@ Just a simple code review using a text editor.
 ## Recommended Mitigation Steps
 Probably would be best to have a generic swap function and then validate the input/output token parameters in the Slingshot contract before passing it to the modules.
 
-
-
-# 9. Wrong signature of balanceOf function in the WETH interface
+# BUG 9
+Wrong signature of balanceOf function in the WETH interface
 ## Summary
 Function balanceOf has an invalid signature in the interface IWETH that is declared in the contract Slingshot.
 ## Risk Rating
@@ -196,7 +203,8 @@ Remove this function from the interface or replace with: function balanceOf(addr
 
 
 
-# 10. A mismatch between the comment and the actual declaration of the contract Strings.
+# BUG 10
+A mismatch between the comment and the actual declaration of the contract Strings.
 ## Summary
 Strings is declared as a contract but has a comment that says it is a library.
 ## Risk Rating

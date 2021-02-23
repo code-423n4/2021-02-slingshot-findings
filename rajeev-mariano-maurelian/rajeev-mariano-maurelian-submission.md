@@ -1,7 +1,7 @@
 **Handle:** Rajeev, Mariano, Maurelian
 **Team:** PocoTiempo
 
-# Finding 1
+# BUG 1
 ## Summary
 Front-running the initializer function `postUpgrade` in `Slingshot.sol` can make attacker the admin.
 
@@ -13,8 +13,8 @@ Risk = 2 (Medium per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_M
 
 ## Vulnerability Details
 
-Given the proxy-based upgradeable contract setup, the initializer function [`postUpgrade`](https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/Slingshot.sol#L55-L59) in `Slingshot.sol` should be called as early as possible (as noted in the `Initializable.sol` [comment](https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/Initializable.sol#L13-L14)).
-
+Given the proxy-based upgradeable contract setup, the initializer function [`postUpgrade`](https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/Slingshot.sol#L55-L59) in `Slingshot.sol` should be called as early as possible (as noted in the `Initializable.sol` [comment](https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/Initializable.sol#L13-L14)).  
+  
 If an attacker front-runs the above initialization, attacker can become the admin.
 
 ## Impact
@@ -33,7 +33,7 @@ Manual review.
 * The ideal solution is to avoid such a front-running scenario is by atomically deploying and initializating the contract as noted in the `Initializable.sol` [comment](https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/Initializable.sol#L13-L14).
 
 
-# Finding 2
+# BUG 2
 ## Summary
 Wrong event emitted for module unregistration in `ModuleRegistry.sol`
 
@@ -58,7 +58,7 @@ Manual review.
 
 Use `emit ModuleUnregistered(_moduleAddress);` here https://github.com/code-423n4/code-contests/blob/7320720d2ab7392c7e2a3b0263135d3db9236994/contests/01-slingshot/contracts/ModuleRegistry.sol#L52 instead of `emit ModuleRegistered(_moduleAddress);`
 
-# Finding 3
+# BUG 3
 ## Summary
 Single-step setting/updating of `admin` role address may irreversibly lock out administrative access if incorrect address is mistakenly used.
 
@@ -84,7 +84,7 @@ Use a two-step process where the new admin address first claims ownership in one
 
 
 
-# Finding 4
+# BUG 4
 ## Summary
 Incorrectly encoded arguments to `executeTrades()` can result in tokens being stolen by MEV.
 

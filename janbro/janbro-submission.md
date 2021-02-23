@@ -2,7 +2,7 @@
 
 **Bio:** Smart contract bug hunter, occasional auditor, and developer.
 
-# ISSUE 1
+# BUG 1
 ## Summary
 If tokens are accidently sent to Slingshot, arbitrary trades can be executed and those funds can be stolen by anyone. This attack can also be utilized as a front running attack on rescueTokens().
 
@@ -32,7 +32,7 @@ Manual code review
 Validate the parameters in the calldata passed to modules. Ensure that the fromToken and amount parameter from executeTrades is equivalent to the token being swapped and amount passed to `swap()`. Additionally, approval values can be limited to value being traded and cleared after trades are executed.
 
 
-# ISSUE 2
+# BUG 2
 ## Summary
 Gas Optimization
 
