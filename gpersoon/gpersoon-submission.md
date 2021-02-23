@@ -1,35 +1,17 @@
 Handle: gpersoon
 Bio: Teacher blockchains at The Hague University of Applied Sciences in The Netherlands
 
-Table of contents:
-
-1.	BUG 1	2
-2.	BUG 2	3
-3.	BUG 3	4
-4.	BUG 4	5
-5.	BUG 5	6
-6.	BUG 6	7
-7.	BUG 7	8
-8.	BUG 8	9
-9.	BUG 9	10
-10.	BUG 10	11
-11.	BUG 11	12
-12.	BUG 12	13
-13.	BUG 13	14
-14.	Safe gas 1	15
-15.	Safe gas 2	16
-16.	Safe gas 3	17
-
-
 # BUG 1
 ## Summary
-postUpgrade can be called by anyone if not initialized
+`postUpgrade` can be called by anyone if not initialized.
 
 ## Risk Rating
 1 (low)
-Vulnerability Details
-postUpgrade can be called by anyone if not initialized, both in Slingshot.sol and ModuleRegistry.sol
-This is only relevant when the contracts are deployed directly (so without deployProxy).
+
+## Vulnerability Details
+`postUpgrade` can be called by anyone if not initialized, both in `Slingshot.sol` and `ModuleRegistry.sol`.
+
+This is only relevant when the contracts are deployed directly (so without `deployProxy`).
 
 ## Impact
 There could be a timewindow before the deployers call postUpgrade.
@@ -37,20 +19,20 @@ During that time a hacker could call postUpgrade taking ownership of the contrac
 Even if this is detected, the contract has to be deployed again, which uses gas.
 
 ## Proof of Concept
-The only check is onlyAdminIfInitialized
+The only check is `onlyAdminIfInitialized`.
+
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/Slingshot.sol#L55
 
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/ModuleRegistry.sol#L24
 
-Which allows everyone when not initialized
+Which allows everyone when not initialized:
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/Adminable.sol#L37
 
 ## Tools Used
-Deployed Remix and tried to call postUpgrade
+Deployed Remix and tried to call `postUpgrade`
 
 ## Recommended Mitigation Steps
-Remove the code for postUpgrade or add additional security checks
-
+Remove the code for `postUpgrade` or add additional security checks.
 
 # BUG 2
 ## Summary
@@ -71,7 +53,8 @@ With allowances a compromised exchange could retrieve these tokens.
 
 ## Tools Used
 Remix
-Recommended Mitigation Steps
+
+## Recommended Mitigation Steps
 Only apply minimum allowance.
 
 # BUG 3
@@ -87,6 +70,7 @@ The function swap in the module files have the same name but different parameter
 https://github.com/code-423n4/code-contests/tree/main/contests/01-slingshot/contracts/module
 
 See the different interfaces below:
+```
 BalancerModule.sol
 UniswapModule.sol
 UniswapModule.sol
@@ -120,15 +104,15 @@ function swap(
   uint256 dx,
   bool tradeAll,
   bool underlyingTokens
-
+```
 ## Impact
 Mistakes could be made calling the functions, for example when copy pasting code from one exchange to another. 
-Proof of Concept
- 
+## Proof of Concept
+N/A 
 ## Tools Used
 Remix
-Recommended Mitigation Steps
- Make the interfaces the same or use different function names.
+## Recommended Mitigation Steps
+Make the interfaces the same or use different function names.
 
 
 # BUG 4
@@ -142,45 +126,54 @@ Curve underlying_coins perhaps not ok
 In the CurveModule.sol code, the function exchange_underlying in called:
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/CurveModule.sol#L58
 
-In other pieces of code I have seen that the appove of the underlying_coins is called:
+In other pieces of code I have seen that the appove of the `underlying_coins` is called:
+```
 IERC20(ICurvePool(curvePool).underlying_coins(…)).approve(..);
 IERC20(ICurvePool(_curvePool).exchange_underlying(...);
 IERC20(ICurvePool(curvePool).underlying_coins(…)).balanceOf(address(this));
+```
 Perhaps that is also relevant here, depending on the calling code.
-Impact
+
+## Impact
 The exchange could fail or coins could be lost (to the Slingshot contract, although they could be recovered)
 
 ## Proof of Concept
- 
+ N/A
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
+
+## Recommended Mitigation Steps
  
-Verify the use of underlying_coins 
+Verify the use of `underlying_coins` 
 
 # BUG 5
 ## Summary
- amountInMax not updated when tradeAll=true in SushiSwapModule.sol UniswapModule.sol
+ `amountInMax` not updated when `tradeAll=true` in `SushiSwapModule.sol` and `UniswapModule.sol`
 
 ## Risk Rating
 1 (low)
 
 ## Vulnerability Details
-Based on the documentation of SushiSwapModule.sol UniswapModule.sol:
+Based on the documentation of `SushiSwapModule.sol` and `UniswapModule.sol`:
 /// @param tradeAll If true, it overrides totalAmountIn with current token balance
+
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/UniswapModule.sol#L26
+
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/SushiSwapModule.sol#L27
 
-I would think that amountInMax has to be updated when tradeAll==true, however it isn’t.
+I would think that `amountInMax` has to be updated when `tradeAll==true`, however it isn’t.
 
 ## Impact
 A lower trade could be performed than expected.
  
 ## Proof of Concept
- 
+ N/A
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
+
+## Recommended Mitigation Steps
  
 Update documentation or update code.
 
@@ -193,25 +186,30 @@ Update documentation or update code.
 1 (low)
 
 ## Vulnerability Details
- 
 Anyone can call executeTrades, as there is no access control for this function.
+
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/Slingshot.sol#L76
 
 Very specific input parameters are required to let this function work properly.
+
 Also there is no check for the following:
+```
 toToken == token of the last trade 
 fromToken == token of the last trade 
+```
 
 ## Impact
 As very specific input parameters are required, unpredictable situations can occur when everyone can call the function executeTrades.
 At the very least the event log could be spammed by calling the function executeTrades with an empy array for trades.
 
 ## Proof of Concept
- 
+N/A
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
- Add access control to the executeTrades function or make the function more robust by adding more explicit checks.
+
+## Recommended Mitigation Steps
+Add access control to the executeTrades function or make the function more robust by adding more explicit checks.
 
 # BUG 7
 ## Summary
@@ -221,19 +219,17 @@ Before/after balance not calculated for all modules.
 1 (low)
 
 ## Vulnerability Details
- 
 Before/after balance is calculated in CurveModule.sol:
 
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/CurveModule.sol#L55
 
+```
    uint256 beforeBalance = IERC20(jToken).balanceOf(address(this));
-….
         return IERC20(jToken).balanceOf(address(this)).sub(beforeBalance);
-
+```
 However this is not done at the other modules.
 
 ## Impact
-
 In case traces of token balances are still present in the Slingshot contract, the users who happen to trade with this coin get some extra balance. 
 This is only relevant for intermediary trades, as a similar mechanism is present in the Slingshot contract:
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/Slingshot.sol#L84
@@ -241,7 +237,8 @@ https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/cont
 By the way the return value of the function Save is not really used, only for event logs, so it doesn’t really make a difference.
  
 ## Proof of Concept
- 
+N/A
+
 ## Tools Used
 Remix
 
@@ -252,7 +249,7 @@ Alternatively verify that the balances of the tokens of Slingshot are zero when 
 
 # BUG 8
 ## Summary
- The ModuleRegistry function registerSwapModule doesn’t really check contracts.
+The ModuleRegistry function registerSwapModule doesn’t really check contracts.
 
 ## Risk Rating
 1 (low)
@@ -269,13 +266,13 @@ https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/cont
 Mistakes with addresses might not be detected immediately. 
 
 ## Proof of Concept
- 
+N/A
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
- 
-In registerSwapModule verify that the address isn’t 0x0 and is indeed a contract address.
 
+## Recommended Mitigation Steps
+In `registerSwapModule` verify that the address isn’t `0x0` and is indeed a contract address.
 
 # BUG 9
 ## Summary
@@ -297,9 +294,10 @@ However it doesn’t compile with solidity 8, due to the used openzeppelin libra
 
 ## Proof of Concept
  
-Tools Used
+## Tools Used
 Remix
-Recommended Mitigation Steps
+
+## Recommended Mitigation Steps
  
 Change the sources to use:
 pragma solidity >=0.7.5 <0.8.0;
@@ -311,15 +309,16 @@ Safemath
 # BUG 10
 ## Summary
 Several  documentation errors
-Risk Rating
+
+## Risk Rating
 1 (low)
 Vulnerability Details
  
-The documentation of the Swap function of CurveModule refers to totalAmountIn, which is not present in the Swap function:
+The documentation of the Swap function of CurveModule refers to `totalAmountIn`, which is not present in the Swap function:
     /// @param tradeAll If true, it overrides totalAmountIn with current token balance
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/CurveModule.sol#L40
 
-The parameter underlyingTokens of the swap function of CurveModule is not documented:
+The parameter `underlyingTokens` of the swap function of CurveModule is not documented:
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/module/CurveModule.sol#L50
 The function executeTrades has a typo in: delagatecall
          // delagatecall message is made on module contract, which is trusted
@@ -329,14 +328,13 @@ The function executeTrades has a typo in: delagatecall
 Documentation could be confusing.
 
 ## Proof of Concept
- 
+N/A
+
 ## Tools Used
 Remix
 
 ## Recommended Mitigation Steps
 Update the documentation within the smartcontracts.
-
-
 
 # BUG 11
 ## Summary
@@ -346,7 +344,7 @@ String function only work with numbers 0 to 9.
 1 (low)
 
 ## Vulnerability Details
-The string functions prependNumber and appendNumber use the following code to convert a number to string, which on works for single digits (0..9): 
+The string functions `prependNumber` and `appendNumber` use the following code to convert a number to string, which on works for single digits (0..9): 
 i+uint(48)
 
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/lib/Strings.sol#L21
@@ -356,10 +354,12 @@ https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/cont
 The functions are only used for event/logs. The logs would show unexpected characters when a long list of trades (>9) would done. This is also unlikely.
  
 ## Proof of Concept
- 
+N/A 
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
+
+## Recommended Mitigation Steps
  
 Document the fact that the string function prependNumber and appendNumber only support 0..9 and make sure that no trades of more than 9 subtrades are done.
 
@@ -379,11 +379,12 @@ No emit is done for rescueTokens, while an emit is done for the other external f
 The event logs for the Slingshot contract do not contain all relevant info. This could be inconvenient for example when creating a subgraph for the Graph protocol or for debugging problems.
 
 ## Proof of Concept
- 
+N/A 
+
 ## Tools Used
 Remix
-Recommended Mitigation Steps
- 
+
+## Recommended Mitigation Steps
 Add an emit event to rescuetokens.
 
 # BUG 13
@@ -395,14 +396,16 @@ No explicit way to rescue WETH tokens.
 
 ## Vulnerability Details
 There is a function rescueTokens to rescue tokens that might have gotten stuck in the contract:
+
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/Slingshot.sol#L120
+
 However there is no explicit way to rescue WETH tokens, even though a lot of code is present to interact with WETH tokens.
 
 ## Impact
 It is possible to retrieve these tokens by giving the WETH contract address to rescueTokens but then the event logs might not be easy to understand. This could be inconvenient for example when creating a subgraph for the Graph protocol or for debugging problems.
  
 ## Proof of Concept
-
+N/A
 ## Tools Used
 Remix
 
@@ -430,7 +433,7 @@ if (swapExactTokensForTokens) in UniswapModule
 if (swapExactTokensForTokens) in SushiSwapModule.sol
 
 For example:
-
+```
 function swapExactTokensForTokens (
     uint amount,
     address[] memory path,
@@ -472,7 +475,7 @@ function swapTokensForExactTokens (
         return amounts[amounts.length - 1];
     }    
 }
-
+```
  
 
 Safe gas 3
@@ -481,7 +484,7 @@ Change approveIfBelow of LibERC20Token
 https://github.com/code-423n4/code-contests/blob/main/contests/01-slingshot/contracts/lib/LibERC20Token.sol#L15
 
 To
-
+```
 mapping(IERC20 => bool) public approved;
 function approveIfBelow(IERC20 token, address spender, uint256 amount) internal {
    if (approved[token]) return;
@@ -489,7 +492,7 @@ function approveIfBelow(IERC20 token, address spender, uint256 amount) internal 
    token.safeApprove(spender, uint256(0));
    token.safeApprove(spender, uint256(-1));
 }
-
+```
 
 The allowance is usually set to uint256(-1) frequently anyway so you might as well always do that. Once that is done if doesn’t have to be done again.
 Perhaps change the function name approveIfBelow to something like: checkAndUpdateApproval
