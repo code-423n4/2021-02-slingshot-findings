@@ -63,10 +63,7 @@ Use `emit ModuleUnregistered(_moduleAddress);` here https://github.com/code-423n
 Single-step setting/updating of `admin` role address may irreversibly lock out administrative access if incorrect address is mistakenly used.
 
 ## Risk Rating
-Impact = High  
-Likelihood = Low  
-Risk = 2 (Medium per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))  
-
+2 
 ## Vulnerability Details
 The `initializeAdmin()` function in `Adminable.sol` sets/updates `admin` role address in one-step. If an incorrect address (zero address or other) is mistakenly used then future administrative access or even recovering from this mistake is prevented because all `onlyAdmin` modifier functions (including `postUpgrade()` with `onlyAdminIfInitialized`, which ends up calling `initializeAdmin()`) require `msg.sender` to be the incorrectly used `admin` address (for which private keys may not be available to sign transactions).
 
