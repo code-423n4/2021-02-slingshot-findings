@@ -107,6 +107,7 @@ See steps listed above.
   
 ## Tools Used
 Manual review.  
+
 ## Recommended Mitigation Steps  
 While iterating of the `trades` array, track the sum the total amount of `fromToken` swapped. Add a require check to ensure that this amount is less than or equal to the `fromAmount` argument.
 
