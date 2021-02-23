@@ -4,7 +4,7 @@
 
 # BUG 1
 ## Summary
-If tokens are accidently sent to Slingshot, arbitrary trades can be executed and those funds can be stolen by anyone. This attack can also be utilized as a front running attack on rescueTokens().
+If tokens are accidently sent to Slingshot, arbitrary trades can be executed and those funds can be stolen by anyone. This attack can also be utilized as a front running attack on `rescueTokens()`.
 
 ## Risk Rating
 2: Medium
