@@ -7,8 +7,8 @@ Front-running the initializer function `postUpgrade` in `Slingshot.sol` can make
 
 ## Risk Rating
 
-Impact = High
-Likelihood = Low
+Impact = High  
+Likelihood = Low  
 Risk = 2 (Medium per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))
 
 ## Vulnerability Details
@@ -38,9 +38,9 @@ Manual review.
 Wrong event emitted for module unregistration in `ModuleRegistry.sol`
 
 ## Risk Rating
-Impact = Medium
-Likelihood = High
-Risk = 3 (High per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))
+Impact = Medium  
+Likelihood = High  
+Risk = 3 (High per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))  
 
 ## Vulnerability Details
 Instead of emitting event of type `event ModuleUnregistered(address moduleAddress);` in `function unregisterSwapModule()`, event for module registration `emit ModuleRegistered(_moduleAddress);` is emitted.
@@ -63,9 +63,9 @@ Use `emit ModuleUnregistered(_moduleAddress);` here https://github.com/code-423n
 Single-step setting/updating of `admin` role address may irreversibly lock out administrative access if incorrect address is mistakenly used.
 
 ## Risk Rating
-Impact = High
-Likelihood = Low
-Risk = 2 (Medium per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))
+Impact = High  
+Likelihood = Low  
+Risk = 2 (Medium per [OWASP](https://owasp.org/www-community/OWASP_Risk_Rating_Methodology))  
 
 ## Vulnerability Details
 The `initializeAdmin()` function in `Adminable.sol` sets/updates `admin` role address in one-step. If an incorrect address (zero address or other) is mistakenly used then future administrative access or even recovering from this mistake is prevented because all `onlyAdmin` modifier functions (including `postUpgrade()` with `onlyAdminIfInitialized`, which ends up calling `initializeAdmin()`) require `msg.sender` to be the incorrectly used `admin` address (for which private keys may not be available to sign transactions).
@@ -89,29 +89,29 @@ Use a two-step process where the new admin address first claims ownership in one
 Incorrectly encoded arguments to `executeTrades()` can result in tokens being stolen by MEV.
 
 ## Risk Rating
-Impact = High
-Likelihood = Medium
-Risk = 3
+Impact = High  
+Likelihood = Medium  
+Risk = 3  
 
 ## Vulnerability Details
-This finding combines a couple weaknesses into one attack. The first weakness is a lack of validation on arguments to `executeTrades`, the second is that a pre-existing `fromToken` balance can be used in a trade.
-
-1. Alice wants to convert 1000 DAI to WETH. She calls `executeTrades(DAI, WETH, 1000, [], 0, alice)`.
-2. Since `trades` is an empty array, and `finalAmountMin` is 0, the result is that 100 DAI are transferred to the Slingshot contract.
-3. Eve (a miner or other 'front runner') may observe this, and immediately call `executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)`.
-4. With a correctly formatted array of `TradeData`, Eve will receive the proceeds of converting Alice's 1000 DAI to WETH.
-
-## Impact
-
-This issue is essentially identical to the one described in [**Ethereum is a Dark Forest**](https://medium.com/@danrobinson/ethereum-is-a-dark-forest-ecc5f0505dff), where locked tokens are available to anyone, and thus recovery is susceptible to front running.
-
+This finding combines a couple weaknesses into one attack. The first weakness is a lack of validation on arguments to `executeTrades`, the second is that a pre-existing `fromToken` balance can be used in a trade.  
+  
+1. Alice wants to convert 1000 DAI to WETH. She calls `executeTrades(DAI, WETH, 1000, [], 0, alice)`.  
+2. Since `trades` is an empty array, and `finalAmountMin` is 0, the result is that 100 DAI are transferred to the Slingshot contract.  
+3. Eve (a miner or other 'front runner') may observe this, and immediately call `executeTrades(DAI, WETH, 0, [{TradeData}], 0, eve)`.  
+4. With a correctly formatted array of `TradeData`, Eve will receive the proceeds of converting Alice's 1000 DAI to WETH.  
+  
+## Impact  
+  
+This issue is essentially identical to the one described in [**Ethereum is a Dark Forest**](https://medium.com/@danrobinson/ethereum-is-a-dark-forest-ecc5f0505dff), where locked tokens are available to anyone, and thus recovery is susceptible to front running.  
+  
 It also provides an unauthorized alternative to `rescueTokens()`, however it is still a useful function to have, as it provides a method to recover the tokens without allowing a front runner to simulate and replay it.
 
 ## Proof of Concept
-See steps listed above.
-
+See steps listed above.  
+  
 ## Tools Used
-Manual review.
-## Recommended Mitigation Steps
+Manual review.  
+## Recommended Mitigation Steps  
 While iterating of the `trades` array, track the sum the total amount of `fromToken` swapped. Add a require check to ensure that this amount is less than or equal to the `fromAmount` argument.
 

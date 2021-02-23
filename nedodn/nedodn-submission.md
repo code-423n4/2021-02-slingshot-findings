@@ -21,7 +21,7 @@ The impact of this could be very large as theoretically every user that uses Sli
 ## POC
 
 An example malicious module would be something that looks like this:
-
+```
 contract BadModule {
     using IERC20 for IERC20;
     function takeUserFunds(
@@ -32,7 +32,7 @@ contract BadModule {
 	IERC20.transferFrom(user, receiver, amount)
     }
 }
-
+```
 ## Recommended Mitigation Steps
 
 Other dex aggregators handle this by using a secondary contract to handle approvals, that cannot be called except when a user executes the trade. This means the user is not required to approve the actual Slingshot contract so that a malicious module would not have access to the user’s allowance. This would be my recommendation. Another way would be to require users to only approve however much they are trading at a time, however that is not really something you can control. Another mitigation would be to add a time period before a newly added module can be activated. This would allow users to see what modules are currently active and if a malicious module was added, they would have time to unset allowances before the module could take their funds.

@@ -18,7 +18,7 @@ https://github.com/code-423n4/code-contests/blob/a13a3bc4649dccbbdc441f14e0d16e4
 ## Tools Used
 Just a simple code review using a text editor.
 ## Recommended Mitigation Steps
-emit ModuleUnregistered event in function unregisterSwapModule.
+emit `ModuleUnregistered` event in function unregisterSwapModule.
 
 # 2. Uniswap and Sushiswap modules approve the wrong amount when swapTokensForExactTokens is used
 ## Summary
